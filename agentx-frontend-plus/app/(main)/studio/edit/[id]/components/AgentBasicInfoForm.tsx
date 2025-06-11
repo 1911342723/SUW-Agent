@@ -52,7 +52,10 @@ const AgentBasicInfoForm: React.FC<AgentBasicInfoFormProps> = ({
               variant="avatar"
               size="lg"
               value={formData.avatar}
-              onChange={(url) => updateFormField("avatar", url)}
+              onChange={(url) => {
+                console.log('头像URL更新:', url);
+                updateFormField("avatar", url);
+              }}
               placeholder={
                 <div className="text-blue-600">
                   {formData.name ? formData.name.charAt(0).toUpperCase() : "🤖"}
@@ -62,6 +65,12 @@ const AgentBasicInfoForm: React.FC<AgentBasicInfoFormProps> = ({
               changeText="更换头像"
               removeText="移除头像"
               maxSize={2 * 1024 * 1024} // 2MB
+              onUploadComplete={(result) => {
+                console.log('头像上传完成:', result);
+              }}
+              onUploadError={(error) => {
+                console.error('头像上传失败:', error);
+              }}
             />
           </div>
         </div>
@@ -113,10 +122,10 @@ const AgentBasicInfoForm: React.FC<AgentBasicInfoFormProps> = ({
                   控制助理是否可以被使用
                 </p>
               </div>
-          </div>
-          <Badge variant={formData.enabled ? "default" : "outline"}>
-            {formData.enabled ? "已启用" : "已禁用"}
-          </Badge>
+            </div>
+            <Badge variant={formData.enabled ? "default" : "outline"}>
+              {formData.enabled ? "已启用" : "已禁用"}
+            </Badge>
           </div>
         </div>
       </div>

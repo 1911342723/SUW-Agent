@@ -2,23 +2,26 @@
 import { toast } from '@/hooks/use-toast'
 import { httpClient } from '@/lib/http-client'
 
-// OSS上传凭证接口
-export interface OssUploadCredential {
-  uploadUrl: string
-  accessKeyId: string
-  policy: string
-  signature: string
-  keyPrefix: string
-  accessUrlPrefix: string
-  expiration: string
-  maxFileSize: number
+// 后端上传结果接口
+interface ServerUploadResult {
+  fileId: string
+  originalName: string
+  storageName: string
+  fileSize: number
+  contentType: string
+  bucketName: string
+  filePath: string
+  accessUrl: string
+  md5Hash: string
+  etag: string
+  createdAt: string
 }
 
 // 后端响应格式
-interface UploadCredentialResponse {
+interface UploadResponse {
   code: number
   message: string
-  data: OssUploadCredential
+  data: ServerUploadResult
   timestamp: number
 }
 
@@ -39,35 +42,22 @@ export interface UploadFileInfo {
 }
 
 /**
- * 获取OSS上传凭证
- */
-export async function getUploadCredential(): Promise<OssUploadCredential> {
-  try {
-    const response = await httpClient.get<UploadCredentialResponse>('/upload/credential')
-
-    if (response.code !== 200) {
-      throw new Error(response.message || '获取上传凭证失败')
-    }
-
-    return response.data
-  } catch (error) {
-    console.error('获取上传凭证失败:', error)
-    throw new Error(error instanceof Error ? error.message : '获取上传凭证失败')
-  }
-}
-
-/**
  * 上传文件到服务器
  */
 export async function uploadFileToServer(
   fileInfo: UploadFileInfo,
-  credential: OssUploadCredential,
   onProgress?: (progress: number) => void
 ): Promise<UploadResult> {
   try {
     // 构建FormData
     const formData = new FormData()
     formData.append('file', fileInfo.file)
+
+    console.log('开始上传文件:', {
+      fileName: fileInfo.fileName,
+      fileType: fileInfo.fileType,
+      fileSize: fileInfo.fileSize
+    })
 
     // 创建XMLHttpRequest以支持进度回调
     return new Promise((resolve, reject) => {
@@ -78,6 +68,7 @@ export async function uploadFileToServer(
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100)
+            console.log('上传进度:', progress)
             onProgress(progress)
           }
         })
@@ -87,32 +78,53 @@ export async function uploadFileToServer(
       xhr.addEventListener('load', async () => {
         if (xhr.status === 200) {
           try {
-            const response = JSON.parse(xhr.responseText)
+            console.log('收到服务器响应:', xhr.responseText)
+            const response = JSON.parse(xhr.responseText) as UploadResponse
+            console.log('解析后的响应:', response)
+
             if (response.code === 200 && response.data) {
-              resolve({
-                url: response.data.url,
-                fileName: fileInfo.fileName,
-                fileSize: fileInfo.fileSize,
-                fileType: fileInfo.fileType
-              })
+              if (!response.data.accessUrl) {
+                console.error('服务器响应缺少accessUrl字段:', response)
+                reject(new Error('服务器响应缺少访问URL'))
+                return
+              }
+
+              const result = {
+                url: response.data.accessUrl,
+                fileName: response.data.originalName,
+                fileSize: response.data.fileSize,
+                fileType: response.data.contentType
+              }
+
+              console.log('生成的上传结果:', result)
+              resolve(result)
             } else {
-              reject(new Error(response.message || '上传失败'))
+              const errorMessage = response.message || '上传失败'
+              console.error('服务器返回错误:', errorMessage)
+              reject(new Error(errorMessage))
             }
           } catch (e) {
+            console.error('解析响应失败:', e)
+            console.error('原始响应内容:', xhr.responseText)
             reject(new Error('解析响应失败'))
           }
         } else {
-          reject(new Error(`上传失败: HTTP ${xhr.status}`))
+          const errorMessage = `上传失败: HTTP ${xhr.status}`
+          console.error(errorMessage)
+          console.error('响应内容:', xhr.responseText)
+          reject(new Error(errorMessage))
         }
       })
 
       // 错误回调
-      xhr.addEventListener('error', () => {
+      xhr.addEventListener('error', (e) => {
+        console.error('网络错误:', e)
         reject(new Error('网络错误，上传失败'))
       })
 
       // 超时回调
       xhr.addEventListener('timeout', () => {
+        console.error('请求超时')
         reject(new Error('上传超时'))
       })
 
@@ -120,12 +132,21 @@ export async function uploadFileToServer(
       xhr.timeout = 30000
 
       // 发送请求
-      xhr.open('POST', credential.uploadUrl.startsWith('http') ? credential.uploadUrl : httpClient.getBaseUrl() + credential.uploadUrl)
+      const uploadUrl = `${httpClient.getBaseUrl()}/upload`
+      console.log('上传URL:', uploadUrl)
+      xhr.open('POST', uploadUrl)
+
+      // 设置认证头
+      const token = localStorage.getItem('auth_token')
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      }
+
       xhr.send(formData)
     })
   } catch (error) {
     console.error('上传文件失败:', error)
-    throw new Error(error instanceof Error ? error.message : '上传文件失败')
+    throw error
   }
 }
 
@@ -139,15 +160,6 @@ export async function uploadMultipleFiles(
   onError?: (fileIndex: number, error: Error) => void
 ): Promise<UploadResult[]> {
   try {
-    // 获取上传凭证
-    const credential = await getUploadCredential()
-
-    // 检查文件大小
-    const oversizedFiles = files.filter(file => file.fileSize > credential.maxFileSize)
-    if (oversizedFiles.length > 0) {
-      throw new Error(`以下文件超过大小限制(${credential.maxFileSize / 1024 / 1024}MB): ${oversizedFiles.map(f => f.fileName).join(', ')}`)
-    }
-
     const results: UploadResult[] = []
 
     // 逐个上传文件
@@ -155,7 +167,6 @@ export async function uploadMultipleFiles(
       try {
         const result = await uploadFileToServer(
           files[i],
-          credential,
           (progress) => onProgress?.(i, progress)
         )
 
@@ -190,16 +201,9 @@ export async function uploadSingleFile(
   }
 
   try {
-    const credential = await getUploadCredential()
-
-    // 检查文件大小
-    if (file.size > credential.maxFileSize) {
-      throw new Error(`文件大小超过限制(${credential.maxFileSize / 1024 / 1024}MB)`)
-    }
-
-    return await uploadFileToServer(fileInfo, credential, onProgress)
+    return await uploadFileToServer(fileInfo, onProgress)
   } catch (error) {
-    console.error('上传文件失败:', error)
+    console.error('文件上传失败:', error)
     throw error
   }
 } 

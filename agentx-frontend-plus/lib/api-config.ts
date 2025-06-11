@@ -12,7 +12,7 @@ export const API_ENDPOINTS = {
   DELETE_SESSION: (id: string) => `/agent/session/${id}`,
   CHAT: "/agent/session/chat",
   SEND_MESSAGE: (sessionId: string) => `/agent/session/${sessionId}/message`,
-  
+
   // 任务相关
   SESSION_TASKS: (sessionId: string) => `/tasks/session/${sessionId}/latest`,
   SESSION_TASK_DETAIL: (taskId: string) => `/tasks/${taskId}`,
@@ -29,13 +29,13 @@ export const API_ENDPOINTS = {
   AGENT_LATEST_VERSION: (id: string) => `/agent/${id}/versions/latest`,
   PUBLISH_AGENT_VERSION: (id: string) => `/agent/${id}/publish`,
   PUBLISHED_AGENTS: "/agent/published",
-  
+
   // Agent工作区相关
   AGENT_WORKSPACE: "/agent/workspace",
   ADD_AGENT_TO_WORKSPACE: (agentId: string) => `/agent/workspace/${agentId}`,
   AGENT_MODEL_CONFIG: (agentId: string) => `/agent/workspace/${agentId}/model-config`,
   SET_AGENT_MODEL_CONFIG: (agentId: string) => `/agent/workspace/${agentId}/model/config`,
-  
+
   // LLM相关
   PROVIDERS: "/llm/providers",
   PROVIDER_DETAIL: (id: string) => `/llm/providers/${id}`,
@@ -44,7 +44,7 @@ export const API_ENDPOINTS = {
   DELETE_PROVIDER: (id: string) => `/llm/providers/${id}`,
   PROVIDER_PROTOCOLS: "/llm/providers/protocols",
   TOGGLE_PROVIDER_STATUS: (id: string) => `/llm/providers/${id}/status`,
-  
+
   // 模型相关
   MODELS: "/llm/models", // 获取模型列表
   DEFAULT_MODEL: "/llm/models/default", // 获取默认模型
@@ -54,7 +54,7 @@ export const API_ENDPOINTS = {
   DELETE_MODEL: (id: string) => `/llm/models/${id}`,
   TOGGLE_MODEL_STATUS: (id: string) => `/llm/models/${id}/status`,
   MODEL_TYPES: "/llm/models/types",
-  
+
   // 工具市场相关
   MARKET_TOOLS: "/tools/market",
   MARKET_TOOL_DETAIL: (id: string) => `/tools/market/${id}`,

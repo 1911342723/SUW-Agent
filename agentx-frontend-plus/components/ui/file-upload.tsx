@@ -149,7 +149,7 @@ export default function FileUpload({
       setUploadProgress(0)
       onUploadStart?.()
 
-      // 上传文件到OSS
+      // 上传文件
       const result = await uploadSingleFile(file, (progress) => {
         setUploadProgress(progress)
       })
@@ -195,17 +195,32 @@ export default function FileUpload({
   // 检查是否有有效的图片URL
   const hasValidImage = value && typeof value === 'string' && value.trim() !== ''
 
+  console.log('FileUpload 组件状态:', {
+    value,
+    hasValidImage,
+    variant,
+    isUploading
+  })
+
   return (
     <div className={`flex items-center gap-3 ${containerClassName}`}>
       {/* 预览区域 */}
       <div
         className={`${containerClass} ${sizeClass} border flex items-center justify-center bg-muted/20 relative ${className}`}
       >
-        {hasValidImage ? (
+        {variant === 'avatar' && hasValidImage ? (
+          <Avatar className="w-full h-full">
+            <AvatarImage src={value} alt="头像" onError={() => console.error('头像加载失败:', value)} />
+            <AvatarFallback>
+              {placeholder || defaultPlaceholder}
+            </AvatarFallback>
+          </Avatar>
+        ) : hasValidImage ? (
           <img
             src={value}
             alt="上传的文件"
             className="h-full w-full object-cover"
+            onError={() => console.error('图片加载失败:', value)}
           />
         ) : (
           <div className="flex items-center justify-center h-full w-full">

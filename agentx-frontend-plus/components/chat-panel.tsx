@@ -57,8 +57,8 @@ interface StreamData {
 }
 
 // 定义消息类型为字符串字面量类型
-type MessageTypeValue = 
-  | "TEXT" 
+type MessageTypeValue =
+  | "TEXT"
   | "TOOL_CALL";
 
 export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName = "AI助手", agentType = 1, onToggleScheduledTaskPanel, multiModal = false }: ChatPanelProps) {
@@ -73,7 +73,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
   const [uploadedFiles, setUploadedFiles] = useState<ChatFile[]>([]) // 新增：已上传的文件列表
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
-  
+
   // 新增：使用useRef保存不需要触发重新渲染的状态
   const hasReceivedFirstResponse = useRef(false);
   const messageContentAccumulator = useRef({
@@ -111,12 +111,12 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
       role: message.role,
       content: message.content,
       type: message.type || MessageType.TEXT,
-      createdAt: message.createdAt instanceof Date 
-        ? message.createdAt.toISOString() 
+      createdAt: message.createdAt instanceof Date
+        ? message.createdAt.toISOString()
         : message.createdAt || new Date().toISOString(),
       fileUrls: message.fileUrls || [] // 修改：使用fileUrls
     };
-    
+
     setMessages(prev => [...prev, messageObj]);
   };
 
@@ -124,22 +124,22 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
   useEffect(() => {
     const fetchSessionMessages = async () => {
       if (!conversationId) return
-      
+
       try {
         setLoading(true)
         setError(null)
         // 清空之前的消息，避免显示上一个会话的内容
         setMessages([])
-        
+
         // 获取会话消息
         const messagesResponse = await getSessionMessagesWithToast(conversationId)
-        
+
         if (messagesResponse.code === 200 && messagesResponse.data) {
           // 转换消息格式
           const formattedMessages = messagesResponse.data.map((msg: MessageDTO) => {
             // 将SYSTEM角色的消息视为assistant
             const normalizedRole = msg.role === "SYSTEM" ? "assistant" : msg.role as "USER" | "SYSTEM" | "assistant"
-            
+
             // 获取消息类型，优先使用messageType字段
             let messageType = MessageType.TEXT
             if (msg.messageType) {
@@ -150,7 +150,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                 console.warn("Unknown message type:", msg.messageType)
               }
             }
-            
+
             return {
               id: msg.id,
               role: normalizedRole,
@@ -161,7 +161,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
               fileUrls: msg.fileUrls || [] // 添加文件URL列表
             }
           })
-          
+
           setMessages(formattedMessages)
         } else {
           const errorMessage = messagesResponse.message || "获取会话消息失败"
@@ -217,7 +217,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
 
     // 添加调试信息
     console.log("当前聊天模式:", agentType === 2 ? "功能性Agent" : "普通对话")
-    
+
     // 获取已完成上传的文件URL
     const completedFiles = uploadedFiles.filter(file => file.url && file.uploadProgress === 100)
     const fileUrls = completedFiles.map(file => file.url)
@@ -229,7 +229,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
     setIsThinking(true) // 设置思考状态
     setCurrentAssistantMessage(null) // 重置助手消息状态
     scrollToBottom() // 用户发送新消息时强制滚动到底部
-    
+
     // 重置所有状态
     setCompletedTextMessages(new Set())
     resetMessageAccumulator()
@@ -274,14 +274,14 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
 
       // 生成基础消息ID，作为所有消息序列的前缀
       const baseMessageId = Date.now().toString()
-      
+
       // 重置状态
       hasReceivedFirstResponse.current = false;
       messageContentAccumulator.current = {
         content: "",
         type: MessageType.TEXT
       };
-      
+
       const decoder = new TextDecoder()
       let buffer = ""
 
@@ -291,12 +291,12 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
 
         // 解码数据块并添加到缓冲区
         buffer += decoder.decode(value, { stream: true })
-        
+
         // 处理缓冲区中的SSE数据
         const lines = buffer.split("\n\n")
         // 保留最后一个可能不完整的行
         buffer = lines.pop() || ""
-        
+
         for (const line of lines) {
           if (line.startsWith("data:")) {
             try {
@@ -307,10 +307,10 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                 jsonStr = jsonStr.substring(5);
               }
               console.log("收到SSE消息:", jsonStr);
-              
+
               const data = JSON.parse(jsonStr) as StreamData
               console.log("解析后的消息:", data, "消息类型:", data.messageType);
-              
+
               // 处理消息 - 传递baseMessageId作为前缀
               handleStreamDataMessage(data, baseMessageId);
             } catch (e) {
@@ -339,53 +339,53 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
       hasReceivedFirstResponse.current = true;
       setIsThinking(false);
     }
-    
+
     // 处理错误消息
     if (isErrorMessage(data)) {
       handleErrorMessage(data);
       return;
     }
-    
+
     // 获取消息类型，默认为TEXT
     const messageType = data.messageType as MessageType || MessageType.TEXT;
-    
+
     // 生成当前消息序列的唯一ID
     const currentMessageId = `assistant-${messageType}-${baseMessageId}-seq${messageSequenceNumber.current}`;
-    
+
     console.log(`处理消息: 类型=${messageType}, 序列=${messageSequenceNumber.current}, ID=${currentMessageId}, done=${data.done}`);
-    
+
     // 处理消息内容（用于UI显示）
     const displayableTypes = [undefined, "TEXT", "TOOL_CALL"];
     const isDisplayableType = displayableTypes.includes(data.messageType);
-    
+
     if (isDisplayableType && data.content) {
       // 累积消息内容
       messageContentAccumulator.current.content += data.content;
       messageContentAccumulator.current.type = messageType;
-      
+
       // 更新UI显示
       updateOrCreateMessageInUI(currentMessageId, messageContentAccumulator.current);
     }
-    
+
     // 消息结束信号处理
     if (data.done) {
       console.log(`消息完成 (done=true), 类型: ${messageType}, 序列: ${messageSequenceNumber.current}`);
-      
+
       // 如果是可显示类型且有内容，完成该消息
       if (isDisplayableType && messageContentAccumulator.current.content) {
         finalizeMessage(currentMessageId, messageContentAccumulator.current);
       }
-      
+
       // 无论如何，都重置消息累积器，准备接收下一条消息
       resetMessageAccumulator();
-      
+
       // 增加消息序列计数
       messageSequenceNumber.current += 1;
-      
+
       console.log(`消息序列增加到: ${messageSequenceNumber.current}`);
     }
   }
-  
+
   // 更新或创建UI消息
   const updateOrCreateMessageInUI = (messageId: string, messageData: {
     content: string;
@@ -395,7 +395,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
     setMessages(prev => {
       // 检查消息是否已存在
       const messageIndex = prev.findIndex(msg => msg.id === messageId);
-      
+
       if (messageIndex >= 0) {
         // 消息已存在，只需更新内容
         console.log(`更新现有消息: ${messageId}, 内容长度: ${messageData.content.length}`);
@@ -420,29 +420,29 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
         ];
       }
     });
-    
+
     // 更新当前助手消息状态
     setCurrentAssistantMessage({ id: messageId, hasContent: true });
   }
-  
+
   // 完成消息处理
   const finalizeMessage = (messageId: string, messageData: {
     content: string;
     type: MessageType;
   }) => {
     console.log(`完成消息: ${messageId}, 类型: ${messageData.type}, 内容长度: ${messageData.content.length}`);
-    
+
     // 如果消息内容为空，不处理
     if (!messageData.content || messageData.content.trim() === "") {
       console.log("消息内容为空，不处理");
       return;
     }
-    
+
     // 确保UI已更新到最终状态，使用相同的原子操作模式
     setMessages(prev => {
       // 检查消息是否已存在
       const messageIndex = prev.findIndex(msg => msg.id === messageId);
-      
+
       if (messageIndex >= 0) {
         // 消息已存在，更新内容
         console.log(`完成现有消息: ${messageId}`);
@@ -467,7 +467,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
         ];
       }
     });
-    
+
     // 标记消息为已完成
     setCompletedTextMessages(prev => {
       const newSet = new Set(prev);
@@ -547,18 +547,18 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                     <div className="code-block-container">
                       <pre
                         className={`${className} rounded p-2 my-2 overflow-x-auto max-w-full text-sm`}
-                        style={{...style, wordBreak: 'break-all', overflowWrap: 'break-word'}}
+                        style={{ ...style, wordBreak: 'break-all', overflowWrap: 'break-word' }}
                       >
                         {tokens.map((line, i) => {
                           // 获取line props但不通过展开操作符传递key
                           const lineProps = getLineProps({ line, key: i });
                           return (
-                            <div 
-                              key={i} 
+                            <div
+                              key={i}
                               className={lineProps.className}
                               style={{
                                 ...lineProps.style,
-                                whiteSpace: 'pre-wrap', 
+                                whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-all'
                               }}
                             >
@@ -569,8 +569,8 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                                 // 获取token props但不包含key
                                 const tokenProps = getTokenProps({ token, key: tokenIndex });
                                 // 删除key属性，使用单独的key属性
-                                return <span 
-                                  key={tokenIndex} 
+                                return <span
+                                  key={tokenIndex}
                                   className={tokenProps.className}
                                   style={{
                                     ...tokenProps.style,
@@ -604,8 +604,8 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
   // 判断是否为错误消息
   const isErrorMessage = (data: StreamData): boolean => {
     return !!data.content && (
-      data.content.includes("Error updating database") || 
-      data.content.includes("PSQLException") || 
+      data.content.includes("Error updating database") ||
+      data.content.includes("PSQLException") ||
       data.content.includes("任务执行过程中发生错误")
     );
   };
@@ -622,7 +622,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-white">
-      <div 
+      <div
         ref={chatContainerRef}
         className="flex-1 overflow-y-auto px-4 pt-3 pb-4 w-full"
       >
@@ -641,7 +641,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                 {error}
               </div>
             )}
-            
+
             {/* 消息内容 */}
             <div className="space-y-6 w-full">
               {messages.length === 0 ? (
@@ -664,14 +664,14 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                               <MessageFileDisplay fileUrls={message.fileUrls} />
                             </div>
                           )}
-                          
+
                           {/* 消息内容 */}
                           {message.content && (
                             <div className="bg-blue-50 text-gray-800 p-3 rounded-lg shadow-sm">
                               {message.content}
                             </div>
                           )}
-                          
+
                           <div className="text-xs text-gray-500 mt-1 text-right">
                             {formatMessageTime(message.createdAt)}
                           </div>
@@ -681,8 +681,8 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                       /* AI消息 */
                       <div className="flex">
                         <div className="h-8 w-8 mr-2 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          {message.type && message.type !== MessageType.TEXT 
-                            ? getMessageTypeInfo(message.type).icon 
+                          {message.type && message.type !== MessageType.TEXT
+                            ? getMessageTypeInfo(message.type).icon
                             : <div className="text-lg">🤖</div>
                           }
                         </div>
@@ -695,14 +695,14 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                             <span className="mx-1 text-gray-400">·</span>
                             <span>{formatMessageTime(message.createdAt)}</span>
                           </div>
-                          
+
                           {/* 文件显示 - 在消息内容之前 */}
                           {message.fileUrls && message.fileUrls.length > 0 && (
                             <div className="mb-3">
                               <MessageFileDisplay fileUrls={message.fileUrls} />
                             </div>
                           )}
-                          
+
                           {/* 消息内容 */}
                           {message.content && (
                             <div className="p-3 rounded-lg">
@@ -715,7 +715,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                   </div>
                 ))
               )}
-              
+
               {/* 思考中提示 */}
               {isThinking && (!currentAssistantMessage || !currentAssistantMessage.hasContent) && (
                 <div className="flex items-start">
@@ -739,7 +739,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                   </div>
                 </div>
               )}
-              
+
               <div ref={messagesEndRef} />
               {!autoScroll && isTyping && (
                 <Button
@@ -802,7 +802,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
             </div>
           </div>
         )}
-        
+
         {/* 输入框和按钮区域 */}
         <div className="flex items-end gap-2">
           {/* 多模态文件上传按钮 */}
@@ -814,7 +814,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
             className="flex-shrink-0"
             showFileList={false}
           />
-          
+
           {/* 定时任务按钮 */}
           {isFunctionalAgent && (
             <Button
@@ -827,7 +827,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
               <Clock className="h-5 w-5 text-gray-500 hover:text-primary" />
             </Button>
           )}
-          
+
           <Textarea
             placeholder="输入消息...(Shift+Enter换行, Enter发送)"
             value={input}
@@ -836,9 +836,9 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
             className="min-h-[56px] flex-1 resize-none overflow-hidden rounded-xl bg-white px-3 py-2 font-normal border-gray-200 shadow-sm focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-opacity-50"
             rows={Math.min(5, Math.max(2, input.split('\n').length))}
           />
-          <Button 
-            onClick={handleSendMessage} 
-            disabled={(!input.trim() && uploadedFiles.length === 0) || isTyping} 
+          <Button
+            onClick={handleSendMessage}
+            disabled={(!input.trim() && uploadedFiles.length === 0) || isTyping}
             className="h-10 w-10 rounded-xl bg-blue-500 hover:bg-blue-600 shadow-sm flex-shrink-0"
           >
             <Send className="h-5 w-5" />

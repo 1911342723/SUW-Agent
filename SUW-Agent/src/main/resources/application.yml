@@ -31,10 +31,6 @@ spring:
       allowed-headers: "*"
       allow-credentials: true
       max-age: 3600
-    static-path-pattern: /files/**
-  web:
-    resources:
-      static-locations: file:${local.storage.base-path:uploads}/
   # 文件上传配置
   servlet:
     multipart:
