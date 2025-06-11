@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>org.xhy</groupId>
+    <groupId>org.yan</groupId>
     <artifactId>SWU-Agent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>SWU-Agent</name>
