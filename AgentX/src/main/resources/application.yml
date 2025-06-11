@@ -1,0 +1,122 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  # 添加Tomcat异步请求配置
+  tomcat:
+    threads:
+      max: 200 # 最大工作线程数
+    connection-timeout: 2000000 # 连接超时毫秒
+    max-connections: 10000 # 最大连接数
+    accept-count: 100 # 等待队列长度
+    # 异步请求相关设置
+    async-timeout: 300000 # 异步请求超时时间 5分钟
+
+spring:
+  application:
+    name: AgentX
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:agentx}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  # 跨域配置
+  mvc:
+    cors:
+      allowed-origins: "*"
+      allowed-methods: "*"
+      allowed-headers: "*"
+      allow-credentials: true
+      max-age: 3600
+    static-path-pattern: /files/**
+  web:
+    resources:
+      static-locations: file:${local.storage.base-path:uploads}/
+  # 文件上传配置
+  servlet:
+    multipart:
+      # 启用文件上传
+      enabled: true
+      # 单个文件大小限制
+      max-file-size: 10MB
+      # 单次请求总文件大小限制
+      max-request-size: 100MB
+      # 文件写入磁盘的阈值
+      file-size-threshold: 2MB
+
+# MyBatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: org.xhy.domain
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted_at
+      logic-delete-value: now()
+      logic-not-delete-value: "null"
+    banner: false
+
+logging:
+  level:
+    root: info
+    org.xhy: debug
+  file:
+    name: logs/agent-x.log
+mail:
+  smtp:
+    host: ${MAIL_SMTP_HOST:qq}
+    port: ${MAIL_SMTP_PORT:25}
+    username: ${MAIL_SMTP_USERNAME:xx}
+    password: ${MAIL_SMTP_PASSWORD:xx}
+  verification:
+    template: ${MAIL_VERIFICATION_TEMPLATE:您的验证码是:%s，有效期10分钟，请勿泄露给他人。}
+    subject: ${MAIL_VERIFICATION_SUBJECT:AgentX - 邮箱验证码}
+
+# GitHub OAuth 配置
+oauth:
+  github:
+    client-id: ${GITHUB_CLIENT_ID}
+    client-secret: ${GITHUB_CLIENT_SECRET}
+    redirect-uri: ${GITHUB_REDIRECT_URI:https://xxx/oauth/github/callback}
+
+github:
+  target:
+    username: ${GITHUB_TARGET_USERNAME:lucky-aeon}
+    repo-name: ${GITHUB_TARGET_REPO_NAME:agent-mcp-community}
+    token: ${GITHUB_TARGET_TOKEN:}
+mcp:
+  gateway:
+    api-key: 123456
+    base-url: http://localhost:8005
+
+# S3对象存储配置
+s3:
+  # 阿里云OSS的S3兼容endpoint
+  endpoint: ${S3_ENDPOINT:https://oss-cn-beijing.aliyuncs.com}
+  # 自定义域名(可选)，如果配置了自定义域名可以使用此配置
+  custom-domain: ${S3_CUSTOM_DOMAIN:}
+  # 访问密钥
+  access-key: ${S3_ACCESS_KEY:${OSS_ACCESS_KEY:${OSS_ACCESS_KEY_ID:}}}
+  secret-key: ${S3_SECRET_KEY:${OSS_SECRET_KEY:${OSS_ACCESS_KEY_SECRET:}}}
+  # 默认存储桶
+  bucket-name: ${S3_BUCKET_NAME:${OSS_BUCKET:}}
+  # 区域
+  region: ${S3_REGION:cn-beijing}
+  # 启用路径样式访问（阿里云OSS需要设置为false，使用虚拟主机样式）
+  path-style-access: ${S3_PATH_STYLE_ACCESS:false}
+  # 文件访问URL前缀
+  url-prefix: ${S3_URL_PREFIX:}
+
+# 本地存储配置
+local:
+  storage:
+    # 存储根目录
+    base-path: ${LOCAL_STORAGE_PATH:uploads}
+    # 文件访问URL前缀
+    url-prefix: ${LOCAL_STORAGE_URL:http://localhost:8080/files}
