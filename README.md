@@ -1,181 +1,214 @@
-# AgentX - 智能对话系统平台
+# swu-agent 项目开发文档
 
-[](https://opensource.org/licenses/MIT)
+## 1. 项目概述
 
-AgentX 是一个基于大模型 (LLM) 和多能力平台 (MCP) 的智能 Agent 构建平台。它致力于简化 Agent 的创建流程，让用户无需复杂的流程节点或拖拽操作，仅通过自然语言和工具集成即可打造个性化的智能 Agent。
+swu-agent 是一个基于 DDD（领域驱动设计）架构的全栈项目，采用前后端分离的开发模式。项目使用现代化的技术栈和最佳实践，旨在提供高质量、可维护的代码架构。
 
-## 🔗 相关链接
+## 2. 技术栈
 
-### 📦 子仓库
-- 🛡️ **高可用网关**: [API-Premium-Gateway](https://github.com/lucky-aeon/API-Premium-Gateway) - 模型高可用组件
-- 🌐 **MCP网关**: [mcp-gateway](https://github.com/lucky-aeon/mcp-gateway) - MCP服务统一管理
-- 🏪 **MCP社区**: [agent-mcp-community](https://github.com/lucky-aeon/agent-mcp-community) - MCP Server 开源社区
+### 2.1 后端技术栈
+- 核心框架：Spring Boot
+- 数据库：MySQL
+- ORM框架：MyBatis-Plus
+- 项目管理：Maven
+- 容器化：Docker
 
-### 📚 学习资源
-- 🎥 **项目教程**: [B站视频教程](https://www.bilibili.com/video/BV1qaTWzPERJ/?spm_id_from=333.1387.homepage.video_card.click)
-- 📖 **详细教学**: [敲鸭社区 - code.xhyovo.cn](https://code.xhyovo.cn/)
-- 🎯 **项目演示**: [在线PPT介绍](https://needless-comparison.surge.sh)
+### 2.2 前端技术栈
+- 框架：Next.js 14
+- UI框架：React
+- 样式解决方案：Tailwind CSS
+- 包管理器：pnpm
+- 开发语言：TypeScript
 
-## ⏳ 功能
- - [x] Agent 管理（创建/发布）
- - [x] LLM 上下文管理（滑动窗口，摘要算法）
- - [x] Agent 策略（MCP）
- - [x] 大模型服务商
- - [x] 用户
- - [x] 工具市场
- - [x] MCP Server Community
- - [x] MCP Gateway
- - [x] 预先设置工具
- - [x] Agent 定时任务
- - [ ] Agent OpenAPI
- - [ ] 模型高可用组件
- - [ ] RAG
- - [ ] 计费
- - [ ] Multi Agent
- - [ ] Agent 监控
+## 3. 项目架构
 
-## 🚀 如何安装启动
-
-### 🛠️ 环境准备
-
-  * **Node.js & npm**: 推荐使用 LTS 版本。
-  * **Java Development Kit (JDK)**: JDK 17 或更高版本。
-  * **Docker & Docker Compose**: 用于部署数据库和其他依赖服务。
-
-### 💻 本地启动
-
-#### 1\. 克隆仓库
-
-```bash
-git clone https://github.com/your-username/AgentX.git # 替换为实际的仓库地址
-cd AgentX
-```
-
-#### 2\. 启动数据库 (PostgreSQL)
-
-进入 `script` 目录，并执行启动脚本。此脚本将使用 Docker Compose 启动一个 PostgreSQL 容器并初始化数据库。
-
-```bash
-cd script
-chmod +x setup_with_compose.sh
-./setup_with_compose.sh
-```
-
-成功启动后，您将看到 PostgreSQL 的连接信息：
+### 3.1 后端架构 (DDD)
 
 ```
-🎉 PostgreSQL 容器已成功启动！
-容器名称: agentx-postgres
-连接信息:
-  主机: localhost
-  端口: 5432
-  用户: postgres
-  密码: postgres
-  数据库: agentx
-  连接URL: jdbc:postgresql://localhost:5432/agentx
-
-你可以使用以下命令连接到数据库:
-  docker exec -it agentx-postgres psql -U postgres -d agentx
-
-✅ 数据库初始化完成！
+org.yan
+  ├── domain                # 领域层
+  │   └── {业务领域}
+  │       ├── model         # 领域模型
+  │       ├── repository    # 仓储接口
+  │       ├── service       # 领域服务
+  │       └── event         # 领域事件
+  │
+  ├── application           # 应用层
+  │   └── {业务领域}
+  │       ├── service       # 应用服务
+  │       ├── dto          # 数据传输对象
+  │       └── assembler    # DTO转换器
+  │
+  ├── interfaces           # 接口层
+  │   ├── api              # API控制器
+  │   ├── dto             # 接口数据传输对象
+  │   └── facade          # 外部系统门面
+  │
+  └── infrastructure      # 基础设施层
+      ├── persistence     # 持久化相关
+      ├── repository      # 仓储实现
+      ├── config         # 配置
+      └── util           # 工具类
 ```
 
-#### 3\. 启动后端服务 (AgentX Java Application)
+### 3.2 前端架构
 
-返回项目根目录，进入 `AgentX` 目录，并使用 Maven 或 Gradle（如果使用）构建并运行后端服务。
-
-```bash
-cd ../AgentX
-# 如果是Maven项目，通常是
-./mvnw clean install
-./mvnw spring-boot:run
-# 或者根据实际的jar包路径运行
-# java -jar target/AgentX-0.0.1-SNAPSHOT.jar # 替换为实际的jar包名称
+```
+agentx-frontend-plus/
+  ├── app/                # Next.js 14 应用路由
+  ├── components/         # 可复用组件
+  ├── contexts/          # React Context
+  ├── hooks/            # 自定义Hooks
+  ├── lib/             # 工具库
+  ├── public/          # 静态资源
+  ├── styles/          # 全局样式
+  └── types/           # TypeScript类型定义
 ```
 
-后端服务启动后，通常会监听 `8080` 端口。
+## 4. 核心模块
 
-#### 4\. 启动前端服务 (AgentX-Frontend-Plus)
+### 4.1 后端模块
+1. **用户认证模块**
+   - 用户注册、登录、注销
+   - 权限管理
+   - 会话管理
 
-返回项目根目录，进入 `agentx-frontend-plus` 目录，安装依赖并启动前端服务。
+2. **业务核心模块**
+   - 领域模型管理
+   - 业务规则实现
+   - 数据处理和验证
 
-```bash
-cd ../agentx-frontend-plus
-npm install --legacy-peer-deps
-npm run dev
+3. **基础设施模块**
+   - 数据持久化
+   - 缓存管理
+   - 日志系统
+   - 工具类库
+
+### 4.2 前端模块
+1. **用户界面模块**
+   - 页面布局组件
+   - UI组件库
+   - 主题管理
+
+2. **状态管理模块**
+   - Context管理
+   - 数据流控制
+   - 缓存策略
+
+3. **API集成模块**
+   - 接口请求封装
+   - 数据转换
+   - 错误处理
+
+## 5. API规范
+
+### 5.1 RESTful API设计
+- 基础路径：`/api`
+- 资源命名：使用复数形式
+- HTTP方法：
+  - GET：查询资源
+  - POST：创建资源
+  - PUT：全量更新
+  - PATCH：部分更新
+  - DELETE：删除资源
+
+### 5.2 响应格式
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {}
+}
 ```
 
-前端服务启动后，通常会监听 `3000` 端口。
+### 5.3 状态码
+- 200：成功
+- 400：请求参数错误
+- 401：未认证
+- 403：权限不足
+- 404：资源不存在
+- 500：服务器内部错误
 
-### ⚙️ 常用 Docker Compose 命令
+## 6. 开发规范
 
-在 `script` 目录下：
+### 6.1 代码规范
+- 遵循DDD架构原则
+- 使用统一的命名规范
+- 遵循SOLID原则
+- 编写单元测试
 
-  * **启动所有服务**: `./setup_with_compose.sh` (首次运行或需要重新初始化数据库时推荐)
-  * **启动/重启服务 (不初始化数据库)**: `docker-compose up -d`
-  * **停止所有服务**: `docker-compose down`
-  * **查看服务状态**: `docker ps`
-  * **查看数据库日志**: `docker logs agentx-postgres`
+### 6.2 Git工作流
+- 主分支：master/main
+- 开发分支：develop
+- 功能分支：feature/*
+- 修复分支：hotfix/*
 
-## 功能介绍
+### 6.3 文档规范
+- 及时更新API文档
+- 编写详细的注释
+- 维护README文档
 
-### Agent 管理
+## 7. 部署架构
 
-用户可自行通过 LLM + "插件" 打造 Agent，插件指的是：工具，知识库等，一切为 LLM 服务都叫做 "插件"
+### 7.1 开发环境
+- 本地开发环境配置
+- 开发数据库配置
+- 开发工具配置
 
-用户打造的 Agent 可以发布给 TA 人使用
+### 7.2 生产环境
+- Docker容器化部署
+- 数据库配置
+- 环境变量管理
+- 日志管理
 
-在使用 Agent 的时候，模型的选择是使用者所决定
+## 8. 安全规范
 
-### Token 上下文管理
+### 8.1 数据安全
+- 敏感数据加密
+- SQL注入防护
+- XSS防护
+- CSRF防护
 
-虽然使用了 langchain4j 提供了内置的 Token 上下文处理，但是在系统中也提供了基于 Token 的滑动窗口以及 摘要算法
+### 8.2 访问控制
+- 身份认证
+- 权限验证
+- 接口限流
+- 会话管理
 
-### Agent 策略
+## 9. 性能优化
 
-Agent = LLM + 工具
+### 9.1 后端优化
+- 数据库索引优化
+- 缓存策略
+- 并发处理
+- 连接池管理
 
-在项目中使用了 LLM + MCP 的方式实现 Agent，通过 langchan4j 提供 MCP 实现
+### 9.2 前端优化
+- 代码分割
+- 懒加载
+- 缓存策略
+- 性能监控
 
-在未来，会经过自测调研的方式自研 Agent 策略
+## 10. 测试规范
 
-### 用户
+### 10.1 单元测试
+- 业务逻辑测试
+- 接口测试
+- 组件测试
 
-提供 github、Emial 的方式进行注册登录
+### 10.2 集成测试
+- 功能测试
+- 性能测试
+- 安全测试
 
-### 工具市场
+## 11. 项目管理
 
-用户可自行上传工具，也可以使用官方的工具，工具给 Agent 进行使用
+### 11.1 版本管理
+- 语义化版本
+- 更新日志
+- 发布流程
 
-### MCP Server Commmunity
-
-用户上传的工具在通过 `人工审核` 通过后会同步到 https://github.com/lucky-aeon/agent-mcp-community 中
-
-### MCP Gateway
-
-采用自研的 MCP 网关来统一管理所有的 MCP Server：https://github.com/lucky-aeon/mcp-gateway
-
-
-## 联系我们
-
-我们致力于构建一个活跃的开发者社区，欢迎各种形式的交流与合作！
-
-### 📱 私人微信
-如有技术问题或商务合作，可添加开发者微信：
-
-<img src="docs/images/wechat.jpg" alt="私人微信" width="200"/>
-
-### 👥 微信交流群
-加入我们的技术交流群，与更多开发者一起讨论：
-
-<img src="docs/images/group.jpg" alt="微信交流群" width="200"/>
-
-### 📢 微信公众号
-关注我们的公众号，获取最新技术动态和产品更新：
-
-<img src="docs/images/微信公众号.jpg" alt="微信公众号" width="200"/>
-
----
-
-**如果二维码过期或无法扫描，请通过私人微信联系我。**
-
+### 11.2 问题追踪
+- Issue管理
+- Bug修复流程
+- 特性请求处理 
