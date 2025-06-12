@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileUpload } from '@/components/ui/file-upload';
+import FileUpload from '@/components/ui/file-upload';
 
 export default function KnowledgePage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,9 +42,9 @@ export default function KnowledgePage() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Knowledge Base</h1>
-      
+
       <div className="mb-6">
-        <FileUpload 
+        <FileUpload
           onFileSelected={handleFileUpload}
           accept=".txt,.pdf,.docx,.md"
           label="Upload Document"
