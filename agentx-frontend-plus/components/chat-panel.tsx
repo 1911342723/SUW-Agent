@@ -25,6 +25,7 @@ interface ChatPanelProps {
   isFunctionalAgent?: boolean
   agentName?: string
   agentType?: number // 新增：助理类型，2表示功能性Agent
+  agentAvatar?: string // 新增：助理头像URL
   onToggleScheduledTaskPanel?: () => void // 新增：切换定时任务面板的回调
   multiModal?: boolean // 新增：是否启用多模态功能
 }
@@ -61,7 +62,7 @@ type MessageTypeValue =
   | "TEXT"
   | "TOOL_CALL";
 
-export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName = "AI助手", agentType = 1, onToggleScheduledTaskPanel, multiModal = false }: ChatPanelProps) {
+export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName = "AI助手", agentType = 1, agentAvatar, onToggleScheduledTaskPanel, multiModal = false }: ChatPanelProps) {
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<MessageInterface[]>([])
   const [isTyping, setIsTyping] = useState(false)
@@ -680,12 +681,12 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
                     ) : (
                       /* AI消息 */
                       <div className="flex">
-                        <div className="h-8 w-8 mr-2 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          {message.type && message.type !== MessageType.TEXT
-                            ? getMessageTypeInfo(message.type).icon
-                            : <div className="text-lg">🤖</div>
-                          }
-                        </div>
+                        <Avatar className="h-8 w-8 mr-2 flex-shrink-0">
+                          <AvatarImage src={agentAvatar || undefined} alt="Agent Avatar" />
+                          <AvatarFallback className="bg-blue-100 text-blue-600">
+                            {agentName ? agentName.charAt(0).toUpperCase() : '🤖'}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="max-w-[80%]">
                           {/* 消息类型指示 */}
                           <div className="flex items-center mb-1 text-xs text-gray-500">

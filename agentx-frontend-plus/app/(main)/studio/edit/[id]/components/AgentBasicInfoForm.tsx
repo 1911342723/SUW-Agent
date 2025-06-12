@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Upload, Trash, FileImage, MessageSquare } from "lucide-react";
 import FileUpload from "@/components/ui/file-upload";
+import { toast } from "@/components/ui/use-toast";
 
 interface AgentFormData {
   name: string;
@@ -69,7 +70,36 @@ const AgentBasicInfoForm: React.FC<AgentBasicInfoFormProps> = ({
                 console.log('头像上传完成:', result);
               }}
               onUploadError={(error) => {
-                console.error('头像上传失败:', error);
+                let descriptionMessage = "上传头像失败，请检查网络或重试。"; // 默认错误消息
+
+                if (error instanceof Error) {
+                  descriptionMessage = error.message;
+                } else if (typeof error === 'string' && error.trim() !== '') {
+                  descriptionMessage = error;
+                } else if (typeof error === 'object' && error !== null) { // 处理对象类型的错误
+                  try {
+                    const stringifiedError = JSON.stringify(error);
+                    // 如果 JSON.stringify 返回空对象或空数组的字符串表示，则使用更具体的提示
+                    if (stringifiedError !== '{}' && stringifiedError !== '[]') {
+                      descriptionMessage = stringifiedError;
+                    } else {
+                      descriptionMessage = "未获得详细错误信息（空对象），请检查网络或重试。";
+                    }
+                  } catch (e) {
+                    // 如果 JSON.stringify 失败，则尝试使用 String() 转换，并提供具体提示
+                    descriptionMessage = `无法序列化错误对象: ${String(error)}`;
+                  }
+                } else if (error) { // 针对非空但非对象/字符串/Error的类型
+                  descriptionMessage = String(error);
+                }
+
+                console.error('头像上传失败:', descriptionMessage);
+
+                toast({
+                  title: "头像上传失败",
+                  description: descriptionMessage,
+                  variant: "destructive",
+                });
               }}
             />
           </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Bot, Search, Plus, Check } from "lucide-react"
 import { Metadata } from "next"
 import { redirect, useRouter } from "next/navigation"
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -25,6 +26,16 @@ export default function ExplorePage() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("推荐")
   const [addingAgentId, setAddingAgentId] = useState<string | null>(null)
+  const [textScale, setTextScale] = useState('scale-105'); // Initial scale for animation
+
+  useEffect(() => {
+    // After component mounts, trigger the shrink animation
+    const timer = setTimeout(() => {
+      setTextScale('scale-100'); // Shrink to normal size
+    }, 100); // Small delay to ensure initial render with scale-105
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // 防抖处理搜索查询
   useEffect(() => {
@@ -106,10 +117,32 @@ export default function ExplorePage() {
       <Sidebar />
 
       {/* 右侧内容区域 */}
-      <div className="flex-1 overflow-auto">
-        <div className="container py-6 px-4">
+      <div className="flex-1 relative flex items-center justify-center">
+        <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+          <DotLottieReact
+            src="https://lottie.host/e7d5c625-5ac5-486b-9647-3af2b5847e08/ADgpunue9O.lottie"
+            loop
+            autoplay
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="relative z-10 text-center py-20">
+          {/* 文字部分保持上移300px */}
+          <div className="-mt-[300px]">
+            <h1 className={`text-4xl font-extrabold tracking-tight lg:text-5xl text-gray-900 mb-4 transition-transform duration-700 ease-out leading-relaxed ${textScale}`}>
+              欢迎访问SWU人工智能代理平台
+            </h1>
+            <p className={`text-xl text-gray-600 mb-8 transition-transform duration-700 ease-out leading-relaxed ${textScale}`}>
+              开始创建你的超级智能体
+            </p>
+          </div>
 
-
+          {/* 增加按钮的mt值 */}
+          <Link href="/studio" passHref>
+            <Button className="mt-[200px] px-8 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 bg-blue-600 hover:bg-blue-700 text-white">
+              开始创建
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

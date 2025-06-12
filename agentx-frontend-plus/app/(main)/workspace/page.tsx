@@ -47,10 +47,10 @@ export default function WorkspacePage() {
   const [loadingSessions, setLoadingSessions] = useState(false)
   const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  
+
   // 定时任务面板相关状态
   const [showScheduledTaskPanel, setShowScheduledTaskPanel] = useState(false)
-  
+
   // 模型选择相关状态
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [modelDialogOpen, setModelDialogOpen] = useState(false)
@@ -92,7 +92,7 @@ export default function WorkspacePage() {
 
         if (response.code === 200) {
           setSessions(response.data)
-          
+
           // 自动选择第一个会话（如果有且未选择任何会话）
           if (response.data.length > 0 && !selectedConversationId) {
             setSelectedConversationId(response.data[0].id)
@@ -115,10 +115,10 @@ export default function WorkspacePage() {
       if (response.code === 200 && response.data) {
         // Add the new session to the list
         setSessions(prev => [...prev, response.data])
-        
+
         // Select the new session
         setSelectedConversationId(response.data.id)
-        
+
         // 如果会话创建成功，使用默认标题"新会话"更新会话
         const defaultTitle = "新会话"
         await updateAgentSessionWithToast(response.data.id, defaultTitle)
@@ -140,7 +140,7 @@ export default function WorkspacePage() {
         // toast已由withToast处理
         // 更新列表，移除已删除的助理
         setAgents(agents.filter((agent) => agent.id !== agentToDelete.id))
-        
+
         // 如果删除的是当前选中的助理，清除选择
         if (selectedWorkspaceId === agentToDelete.id) {
           setSelectedWorkspaceId(null)
@@ -169,10 +169,10 @@ export default function WorkspacePage() {
 
   // 获取当前选中的Agent信息
   const currentAgent = agents.find(agent => agent.id === selectedWorkspaceId)
-  
+
   // 判断当前Agent是否为功能性Agent (agentType = 2)
   const isFunctionalAgent = currentAgent?.agentType === AgentType.FUNCTIONAL
-  
+
   // 获取当前会话的多模态设置
   const multiModal = currentSession?.multiModal || false
 
@@ -221,7 +221,7 @@ export default function WorkspacePage() {
                       key={agent.id}
                       className="border rounded-lg p-4 flex items-start gap-3 cursor-pointer hover:bg-gray-50 group relative"
                     >
-                      <div 
+                      <div
                         className="flex-1 flex items-start gap-3"
                         onClick={() => {
                           // Set the selected workspace to this agent
@@ -254,7 +254,7 @@ export default function WorkspacePage() {
                           )}
                         </div>
                       </div>
-                      
+
                       {/* 操作菜单 */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -295,16 +295,17 @@ export default function WorkspacePage() {
         ) : (
           <div className="flex-1 flex w-full h-full">
             <div className="flex-1 flex flex-col">
-              <ChatPanel 
+              <ChatPanel
                 conversationId={selectedConversationId}
                 isFunctionalAgent={isFunctionalAgent}
                 agentName={currentAgent?.name || "AI助手"}
+                agentAvatar={currentAgent?.avatar}
                 onToggleScheduledTaskPanel={() => setShowScheduledTaskPanel(!showScheduledTaskPanel)}
                 multiModal={multiModal}
               />
             </div>
             {showScheduledTaskPanel && isFunctionalAgent && (
-              <ScheduledTaskPanel 
+              <ScheduledTaskPanel
                 isOpen={showScheduledTaskPanel}
                 onClose={() => setShowScheduledTaskPanel(false)}
                 conversationId={selectedConversationId}
@@ -334,7 +335,7 @@ export default function WorkspacePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* 模型选择对话框 */}
       <ModelSelectDialog
         open={modelDialogOpen}

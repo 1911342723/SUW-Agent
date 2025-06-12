@@ -22,14 +22,14 @@ import { deleteCookie } from "@/lib/utils"
 
 const navItems = [
   {
-    name: "探索",
-    href: "/explore",
-    icon: Search,
+    name: "首页",
+    href: "/",
+    icon: Home,
   },
   {
-    name: "工作室",
+    name: "智能体创建",
     href: "/studio",
-    icon: FileText,
+    icon: Tool,
   },
   {
     name: "知识库",
@@ -42,7 +42,7 @@ const navItems = [
     icon: GitBranch,
   },
   {
-    name: "工具市场",
+    name: "MCP工具",
     href: "/tools",
     icon: Wrench,
   },
@@ -55,8 +55,8 @@ export function NavigationBar() {
 
   // Check if current path matches the menu item's href
   const isActiveRoute = (href: string) => {
-    if (href === "/explore" && pathname === "/") {
-      return true // Main page also counts as explore
+    if (href === "/") {
+      return pathname === "/"
     }
     return pathname === href || pathname.startsWith(`${href}/`)
   }
@@ -113,9 +113,8 @@ export function NavigationBar() {
             </nav>
           </SheetContent>
         </Sheet>
-        <Link href="/" className="mr-6 flex items-center space-x-2">
-          <Home className="h-6 w-6 text-blue-600" />
-          <span className="hidden font-bold sm:inline-block">SWU-Agent</span>
+        <Link href="/" className="mr-6 flex items-center">
+          <span className="font-bold text-base md:text-lg">SWU人工智能代理平台</span>
         </Link>
         <div className="flex flex-1 items-center justify-between">
           <nav className="flex items-center space-x-6">
@@ -188,7 +187,7 @@ export function NavigationBar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <UploadCloud className="mr-2 h-4 w-4" />
                   退出登录
                 </DropdownMenuItem>
               </DropdownMenuContent>
