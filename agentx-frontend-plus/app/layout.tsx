@@ -2,6 +2,7 @@ import type React from "react"
 import { Providers } from "./providers"
 import { ThemeProvider } from "@/components/theme-provider"
 import "@/styles/globals.css"
+import { StageWiseToolbarWrapper } from "@/components/stagewise-toolbar"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Providers>{children}</Providers>
+          <StageWiseToolbarWrapper />
         </ThemeProvider>
       </body>
     </html>

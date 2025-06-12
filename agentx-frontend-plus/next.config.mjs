@@ -28,6 +28,14 @@ const nextConfig = {
     }
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/n8n/:path*',
+        destination: 'http://localhost:9000/n8n/:path*',
+      },
+    ]
+  },
 }
 
 mergeConfig(nextConfig, userConfig)

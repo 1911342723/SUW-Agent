@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Database, FileText, Home, Menu, Search, Settings, PenToolIcon as Tool, UploadCloud, LogOut, Wrench } from "lucide-react"
+import { Database, FileText, Home, Menu, Search, Settings, PenToolIcon as Tool, UploadCloud, LogOut, Wrench, GitBranch } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
 import { cn } from "@/lib/utils"
@@ -35,6 +35,11 @@ const navItems = [
     name: "知识库",
     href: "/knowledge",
     icon: Database,
+  },
+  {
+    name: "工作流",
+    href: "/workflow",
+    icon: GitBranch,
   },
   {
     name: "工具市场",
@@ -194,4 +199,3 @@ export function NavigationBar() {
     </header>
   )
 }
-

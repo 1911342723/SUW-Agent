@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"  # 直接绑定到主机端口
+    environment:
+      # 基础配置
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      
+      # 安全配置 - 确保禁用所有安全头
+      - N8N_SECURITY_HTTP_SECURE_HEADERS=false
+      - N8N_DISABLE_UI_IFRAME_PROTECTION=true
+      - N8N_CUSTOM_HEADERS={"X-Frame-Options":"", "Content-Security-Policy":""}
+      
+      # CSP 配置
+      - N8N_CUSTOM_CSP="frame-ancestors http://localhost:3000;"
+      
+      # 跨域配置
+      - N8N_CORS_ALLOWED_ORIGINS=http://localhost:3000
+      - N8N_CORS_ALLOWED_CREDENTIALS=true
+      
+      # 其他配置
+      - DB_TYPE=sqlite
+      - DB_SQLITE_VACUUM_ON_STARTUP=true
+      
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    # 不需要自定义网络
