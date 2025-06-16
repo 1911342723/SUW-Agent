@@ -8,7 +8,7 @@ swu-agent 是一个基于 DDD（领域驱动设计）架构的全栈项目，采
 
 ### 2.1 后端技术栈
 - 核心框架：Spring Boot
-- 数据库：MySQL
+- 数据库：PostgreSQL
 - ORM框架：MyBatis-Plus
 - 项目管理：Maven
 - 容器化：Docker
