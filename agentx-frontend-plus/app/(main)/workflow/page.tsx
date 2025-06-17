@@ -1,7 +1,6 @@
 "use client"
 import { useState } from "react";
-import { XCircle, Cog } from "lucide-react";
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { XCircle } from "lucide-react";
 
 export default function WorkflowPage() {
     const [isOpening, setIsOpening] = useState(false);
@@ -56,30 +55,27 @@ export default function WorkflowPage() {
 
     return (
         <div className="w-full h-[calc(100vh-3.5rem)] relative flex items-center justify-center overflow-hidden">
-            {/* 背景动画容器 */}
+            {/* 背景视频容器 */}
             <div className="absolute inset-0 w-full h-full flex items-center justify-center z-0 opacity-50">
-                <DotLottieReact
-                    src="https://lottie.host/8142efa0-e154-49b6-bddc-c446a5c23b0d/mtxH9SNZdd.lottie"
+                <video
+                    autoPlay
                     loop
-                    autoplay
+                    muted
+                    playsInline
                     className="w-full h-full object-cover"
-                />
+                >
+                    <source src="/video/video.mp4" type="video/mp4" />
+                </video>
             </div>
 
             {/* 主内容 */}
             <div className="relative z-10 text-center max-w-2xl mx-auto space-y-32">
-                <h1 className="text-5xl sm:text-6xl text-gray-900 font-extrabold animate-float mt-[-100px]">
+                <h1
+                    onClick={handleOpenN8N}
+                    className="text-4xl sm:text-5xl text-white font-extrabold animate-float mt-[33vh] cursor-pointer hover:text-blue-200 transition-all duration-500 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_20px_rgba(59,130,246,0.8)] tracking-wider leading-relaxed animate-scale-in"
+                >
                     万物实现自动化
                 </h1>
-
-                <div className="mt-32">
-                    <button
-                        onClick={handleOpenN8N}
-                        className="px-12 py-5 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105 text-xl font-semibold"
-                    >
-                        点击打开工作流平台
-                    </button>
-                </div>
 
                 {hasError && (
                     <div className="mt-12 bg-red-50/90 border-l-4 border-red-400 text-red-700 p-4 rounded-md shadow-md flex items-center space-x-3">
@@ -104,6 +100,23 @@ export default function WorkflowPage() {
                     </div>
                 </div>
             )}
+
+            {/* 添加动画样式 */}
+            <style jsx global>{`
+                @keyframes scale-in {
+                    0% {
+                        transform: scale(1.5);
+                        opacity: 0;
+                    }
+                    100% {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
+                .animate-scale-in {
+                    animation: scale-in 1s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 }

@@ -37,14 +37,14 @@ const navItems = [
     icon: Database,
   },
   {
-    name: "工作流",
-    href: "/workflow",
-    icon: GitBranch,
-  },
-  {
     name: "MCP工具",
     href: "/tools",
     icon: Wrench,
+  },
+  {
+    name: "工作流",
+    href: "/workflow",
+    icon: GitBranch,
   },
 ]
 

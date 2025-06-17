@@ -41,6 +41,7 @@
     "@stagewise-plugins/react": "^0.4.6",
     "@stagewise/toolbar-next": "^0.4.6",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",
