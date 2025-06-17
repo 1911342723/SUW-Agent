@@ -20,28 +20,28 @@ import AgentPreviewChat from "@/components/agent-preview-chat"
 interface AgentFormModalProps {
   // 模式控制
   mode: "create" | "edit"
-  
+
   // 编辑模式属性
   agentId?: string
   initialData?: Partial<AgentFormData>
-  
+
   // 标题和描述
   title?: string
   description?: string
-  
+
   // 操作回调
   onSubmit: (formData: AgentFormData) => Promise<void>
   onCancel: () => void
-  
+
   // 编辑模式特有的操作
   onDelete?: () => void
   onPublish?: () => void
   onToggleStatus?: () => void
   onShowVersions?: () => void
-  
+
   // 加载状态
   isSubmitting?: boolean
-  
+
   // 其他编辑模式组件（如版本历史对话框等）
   children?: React.ReactNode
 }
@@ -66,33 +66,33 @@ export default function AgentFormModal({
     activeTab,
     setActiveTab,
     isSubmitting: internalIsSubmitting,
-    
+
     // 工具相关状态
     selectedToolForSidebar,
     isToolSidebarOpen,
     setIsToolSidebarOpen,
-    
+
     // 表单数据
     formData,
     updateFormField,
-    
+
     // 表单操作函数
     toggleTool,
     toggleKnowledgeBase,
     handleToolClick,
     updateToolPresetParameters,
-    
+
     // 工具函数
     getAvailableTabs,
-  } = useAgentForm({ 
-    initialData, 
-    isEditMode: mode === "edit" 
+  } = useAgentForm({
+    initialData,
+    isEditMode: mode === "edit"
   })
 
   const { toast } = useToast()
 
   const isSubmitting = externalIsSubmitting || internalIsSubmitting
-  
+
   // 编辑模式下，如果没有initialData，说明还在加载
   const isLoading = mode === "edit" && !initialData
 
@@ -101,7 +101,7 @@ export default function AgentFormModal({
     if (!formData.name.trim()) {
       return
     }
-    
+
     await onSubmit(formData)
   }
 
@@ -147,9 +147,9 @@ export default function AgentFormModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-auto p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl flex max-h-[95vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl flex flex-col md:flex-row max-h-[95vh] overflow-hidden">
         {/* 左侧表单 */}
-        <div className="w-3/5 p-8 overflow-auto">
+        <div className="w-full md:w-3/5 p-8 overflow-auto">
           {/* 头部 */}
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -160,7 +160,7 @@ export default function AgentFormModal({
                 <p className="text-muted-foreground mt-1">{description}</p>
               )}
             </div>
-            
+
             <div className="flex items-center gap-2">
               {/* 编辑模式的额外操作 */}
               {mode === "edit" && (
@@ -187,7 +187,7 @@ export default function AgentFormModal({
                   )}
                 </>
               )}
-              
+
               <Button variant="outline" onClick={onCancel}>
                 取消
               </Button>
@@ -238,8 +238,8 @@ export default function AgentFormModal({
                 取消
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting 
-                  ? (mode === "create" ? "创建中..." : "保存中...") 
+                {isSubmitting
+                  ? (mode === "create" ? "创建中..." : "保存中...")
                   : (mode === "create" ? "确认创建" : "保存更改")
                 }
               </Button>
@@ -248,7 +248,7 @@ export default function AgentFormModal({
         </div>
 
         {/* 右侧预览 */}
-        <div className="w-2/5 bg-gray-50 p-8 overflow-auto border-l">
+        <div className="hidden md:block w-2/5 bg-gray-50 p-8 overflow-auto border-l">
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -258,7 +258,7 @@ export default function AgentFormModal({
                 </p>
               </div>
             </div>
-            
+
             {/* 默认模型选择 */}
             <ModelSelector mode="preview" className="mt-4" />
           </div>
@@ -310,8 +310,8 @@ export default function AgentFormModal({
         tool={selectedToolForSidebar}
         isOpen={isToolSidebarOpen}
         onClose={() => setIsToolSidebarOpen(false)}
-        presetParameters={selectedToolForSidebar && selectedToolForSidebar.mcpServerName && formData.toolPresetParams[selectedToolForSidebar.mcpServerName] ? 
-          formData.toolPresetParams[selectedToolForSidebar.mcpServerName] : 
+        presetParameters={selectedToolForSidebar && selectedToolForSidebar.mcpServerName && formData.toolPresetParams[selectedToolForSidebar.mcpServerName] ?
+          formData.toolPresetParams[selectedToolForSidebar.mcpServerName] :
           {}}
         onSavePresetParameters={updateToolPresetParameters}
       />

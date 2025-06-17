@@ -12,12 +12,12 @@ import { Label } from "@/components/ui/label"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronLeft, ChevronRight, Edit, MoreHorizontal, Plus, Trash2, Clock } from "lucide-react"
 import { useWorkspace } from "@/contexts/workspace-context"
-import { 
-  getAgentSessionsWithToast, 
-  createAgentSessionWithToast, 
-  updateAgentSessionWithToast, 
+import {
+  getAgentSessionsWithToast,
+  createAgentSessionWithToast,
+  updateAgentSessionWithToast,
   deleteAgentSessionWithToast,
-  type SessionDTO 
+  type SessionDTO
 } from "@/lib/agent-session-service"
 import { toast } from "@/hooks/use-toast"
 
@@ -110,7 +110,7 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
 
     try {
       setIsDeletingSession(true)
-      
+
       // 直接删除会话，后端会自动处理级联删除定时任务
       const response = await deleteAgentSessionWithToast(sessionToDelete)
 
@@ -121,7 +121,7 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
         if (selectedConversationId === sessionToDelete) {
           setSelectedConversationId(null)
         }
-        
+
         toast({
           title: "删除成功",
           description: "会话及其关联的定时任务已删除"
@@ -213,16 +213,16 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
             </div>
           </>
         )}
-        
+
         {/* 收缩/展开按钮 - 明确右侧位置 */}
-        <div 
+        <div
           className={`absolute ${isCollapsed ? 'w-full h-12' : 'w-12 border-l h-full'} right-0 top-0 flex items-center justify-center cursor-pointer hover:bg-gray-50`}
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </div>
       </div>
-      
+
       {!isCollapsed && (
         <>
           <div className="relative p-4">
@@ -244,7 +244,7 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
             >
             </svg>
           </div>
-          
+
           <ScrollArea className="flex-1">
             <div className="p-2 space-y-1">
               {loading ? (
@@ -286,16 +286,16 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
                           {new Date(session.createdAt).toLocaleString()}
                         </div>
                       </div>
-                      
+
                       <div style={{ display: 'inline-block' }}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
                               size="icon"
-                              style={{ 
-                                height: '32px', 
-                                width: '32px', 
+                              style={{
+                                height: '32px',
+                                width: '32px',
                                 minWidth: '32px',
                                 flexShrink: 0,
                                 display: 'inline-flex',
@@ -312,7 +312,7 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -352,7 +352,7 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
           </ScrollArea>
         </>
       )}
-      
+
       {/* 删除确认对话框 */}
       <Dialog open={!!sessionToDelete} onOpenChange={(open) => !open && setSessionToDelete(null)}>
         <DialogContent className="max-w-md">
@@ -362,7 +362,7 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
               "确定要删除这个会话吗？此操作无法撤销。"
             </DialogDescription>
           </DialogHeader>
-          
+
           <DialogFooter>
             <Button
               variant="outline"

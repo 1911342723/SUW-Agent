@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { ChevronDown, ChevronRight, Compass, FolderOpen, Bot, RefreshCw, MoreHorizontal, Trash2, Settings } from "lucide-react"
+import { ChevronDown, ChevronRight, Compass, FolderOpen, Bot, RefreshCw, MoreHorizontal, Trash2, Settings, Menu } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ModelSelectDialog } from "../components/model-select-dialog"
-import { 
-  getWorkspaceAgentsWithToast, 
-  removeAgentFromWorkspaceWithToast 
+import {
+  getWorkspaceAgentsWithToast,
+  removeAgentFromWorkspaceWithToast
 } from "@/lib/api-services"
 
 type SidebarItem = {
@@ -39,6 +39,7 @@ type SidebarItem = {
 type SidebarItemProps = {
   item: SidebarItem & { id?: string }
   depth?: number
+  isCollapsed?: boolean
 }
 
 type WorkspaceItemProps = {
@@ -47,15 +48,16 @@ type WorkspaceItemProps = {
   icon?: string
   avatar?: string | null
   onClick?: () => void
+  isCollapsed?: boolean
 }
 
-function WorkspaceItem({ id, name, icon, avatar, onClick }: WorkspaceItemProps) {
+function WorkspaceItem({ id, name, icon, avatar, onClick, isCollapsed }: WorkspaceItemProps) {
   const { selectedWorkspaceId, setSelectedWorkspaceId, setSelectedConversationId } = useWorkspace()
   const isActive = selectedWorkspaceId === id
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
-  
+
   // 添加模型选择相关状态
   const [showModelDialog, setShowModelDialog] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
@@ -97,7 +99,7 @@ function WorkspaceItem({ id, name, icon, avatar, onClick }: WorkspaceItemProps) 
   // 打开模型设置对话框
   const handleOpenModelSettings = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    
+
     // 获取agent详情
     try {
       // 这里可以在实际情况下添加获取agent详情的API调用
@@ -113,7 +115,7 @@ function WorkspaceItem({ id, name, icon, avatar, onClick }: WorkspaceItemProps) 
       console.error("获取助理详情失败:", error)
     }
   }
-  
+
   // 模型设置成功回调
   const handleModelSetSuccess = () => {
     // 可以添加刷新agent列表的逻辑
@@ -125,44 +127,48 @@ function WorkspaceItem({ id, name, icon, avatar, onClick }: WorkspaceItemProps) 
       <Button
         variant="ghost"
         className={cn(
-          "w-full justify-start px-2 py-1.5 text-sm font-medium pl-8 hover:bg-accent hover:text-accent-foreground",
+          "w-full justify-start px-2 py-1.5 text-sm font-medium",
           isActive && "bg-accent text-accent-foreground",
+          !isCollapsed && "pl-8",
+          isCollapsed && "justify-center px-0"
         )}
         onClick={onClick}
       >
         {avatar && avatar.trim() !== '' ? (
-          <div className="w-5 h-5 rounded-full overflow-hidden mr-2 flex-shrink-0">
+          <div className={cn("w-5 h-5 rounded-full overflow-hidden", !isCollapsed && "mr-2")}>
             <img src={avatar} alt={name} className="w-full h-full object-cover" />
           </div>
         ) : icon ? (
-          <span className="mr-2">{icon}</span>
+          <span className={cn(!isCollapsed && "mr-2")}>{icon}</span>
         ) : (
-          <Bot className="mr-2 h-4 w-4" />
+          <Bot className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
         )}
-        <span className="truncate">{name}</span>
+        {!isCollapsed && <span className="truncate">{name}</span>}
       </Button>
 
       {/* Three-dot menu that appears on hover */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">操作</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleOpenModelSettings}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>设置模型</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600" onClick={handleDeleteWorkspace}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>从工作区移除</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {!isCollapsed && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">操作</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleOpenModelSettings}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>设置模型</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600" onClick={handleDeleteWorkspace}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>从工作区移除</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
 
       {/* Delete confirmation dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -183,7 +189,7 @@ function WorkspaceItem({ id, name, icon, avatar, onClick }: WorkspaceItemProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* 模型选择对话框 */}
       {selectedAgent && (
         <ModelSelectDialog
@@ -199,7 +205,7 @@ function WorkspaceItem({ id, name, icon, avatar, onClick }: WorkspaceItemProps) 
   )
 }
 
-function SidebarItemComponent({ item, depth = 0 }: SidebarItemProps) {
+function SidebarItemComponent({ item, depth = 0, isCollapsed = false }: SidebarItemProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { setSelectedWorkspaceId, setSelectedConversationId } = useWorkspace()
@@ -213,7 +219,7 @@ function SidebarItemComponent({ item, depth = 0 }: SidebarItemProps) {
 
   const handleWorkspaceClick = (workspaceId: string) => {
     setSelectedWorkspaceId(workspaceId)
-    setSelectedConversationId(null) // 清除选中的对话
+    setSelectedConversationId(null)
     router.push(`/workspace?id=${workspaceId}`)
   }
 
@@ -222,21 +228,28 @@ function SidebarItemComponent({ item, depth = 0 }: SidebarItemProps) {
       <div className="space-y-1">
         <Button
           variant="ghost"
-          className={cn("w-full justify-start px-2 py-1.5 text-sm font-medium", depth > 0 && "pl-8")}
+          className={cn(
+            "w-full justify-start px-2 py-1.5 text-sm font-medium",
+            depth > 0 && !isCollapsed && "pl-8",
+            isCollapsed && "justify-center px-0"
+          )}
           onClick={() => setExpanded(!expanded)}
         >
           {typeof item.icon === "string" ? (
-            <span className="mr-2">{item.icon}</span>
+            <span className={cn("mr-2", isCollapsed && "mr-0")}>{item.icon}</span>
           ) : (
-            item.icon && <item.icon className="mr-2 h-4 w-4" />
+            item.icon && <item.icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
           )}
-          <span className="flex-1 text-left">{item.title}</span>
-          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {!isCollapsed && (
+            <>
+              <span className="flex-1 text-left">{item.title}</span>
+              {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </>
+          )}
         </Button>
-        {expanded && (
+        {expanded && !isCollapsed && (
           <div className="space-y-1">
             {item.children.map((child, index) => {
-              // 确保每个子项都有一个有效的ID
               const childId = child.id || `item-${index}`
               return (
                 <WorkspaceItem
@@ -250,6 +263,7 @@ function SidebarItemComponent({ item, depth = 0 }: SidebarItemProps) {
                       handleWorkspaceClick(childId)
                     }
                   }}
+                  isCollapsed={isCollapsed}
                 />
               )
             })}
@@ -265,7 +279,8 @@ function SidebarItemComponent({ item, depth = 0 }: SidebarItemProps) {
       className={cn(
         "w-full justify-start px-2 py-1.5 text-sm font-medium",
         isActive ? "bg-accent text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground",
-        depth > 0 && "pl-8",
+        depth > 0 && !isCollapsed && "pl-8",
+        isCollapsed && "justify-center px-0"
       )}
       onClick={() => {
         if (item.href) {
@@ -273,8 +288,12 @@ function SidebarItemComponent({ item, depth = 0 }: SidebarItemProps) {
         }
       }}
     >
-      {typeof Icon === "string" ? <span className="mr-2">{Icon}</span> : Icon && <Icon className="mr-2 h-4 w-4" />}
-      <span>{item.title}</span>
+      {typeof Icon === "string" ? (
+        <span className={cn("mr-2", isCollapsed && "mr-0")}>{Icon}</span>
+      ) : (
+        Icon && <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+      )}
+      {!isCollapsed && <span>{item.title}</span>}
     </Button>
   )
 }
@@ -284,6 +303,25 @@ export function Sidebar() {
   const [loading, setLoading] = useState(true)
   const [modelDialogOpen, setModelDialogOpen] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  // 监听窗口大小变化
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsCollapsed(true)
+      }
+    }
+
+    // 初始检查
+    handleResize()
+
+    // 添加事件监听
+    window.addEventListener('resize', handleResize)
+
+    // 清理事件监听
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // 加载工作区Agent列表
   const loadWorkspaceAgents = async () => {
@@ -330,24 +368,41 @@ export function Sidebar() {
       children: loading
         ? []
         : agents.map((agent) => ({
-            title: agent.name,
-            icon: undefined,
-            avatar: agent.avatar,
-            id: agent.id,
-          })),
+          title: agent.name,
+          icon: undefined,
+          avatar: agent.avatar,
+          id: agent.id,
+        })),
     },
   ]
 
   return (
-    <div className="w-[220px] border-r flex flex-col h-full bg-gray-50">
+    <div className={cn(
+      "border-r flex flex-col h-full bg-gray-50 transition-all duration-300",
+      isCollapsed ? "w-[60px]" : "w-[220px]"
+    )}>
+      <div className="flex items-center justify-end p-2 border-b">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="h-8 w-8"
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
+      </div>
       <div className="flex-1 overflow-auto py-4 px-3">
         <div className="space-y-2">
           {sidebarItems.map((item, index) => (
-            <SidebarItemComponent key={index} item={item} />
+            <SidebarItemComponent
+              key={index}
+              item={item}
+              isCollapsed={isCollapsed}
+            />
           ))}
 
           {/* Show loading state for workspaces */}
-          {loading && (
+          {loading && !isCollapsed && (
             <div className="space-y-2 pl-8 pr-2">
               {Array.from({ length: 3 }).map((_, index) => (
                 <div key={index} className="flex items-center gap-2 py-1.5">

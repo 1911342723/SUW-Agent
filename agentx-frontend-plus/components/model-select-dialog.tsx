@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogDescription,
-  DialogFooter 
+  DialogFooter
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -74,7 +74,7 @@ export function ModelSelectDialog({
   const [maxTokens, setMaxTokens] = useState(4096);
   const [reserveRatio, setReserveRatio] = useState(0.2);
   const [summaryThreshold, setSummaryThreshold] = useState(35);
-  
+
   // 策略选择
   const [strategyType, setStrategyType] = useState("NONE");
 
@@ -96,9 +96,9 @@ export function ModelSelectDialog({
 
         // 处理当前模型ID和配置
         if (currentModelResponse.code === 200 && currentModelResponse.data) {
-          const { modelId, temperature: temp, topP: top, topK: k, maxTokens: max, 
-                 strategyType: strategy, reserveRatio: ratio, summaryThreshold: threshold } = currentModelResponse.data;
-          
+          const { modelId, temperature: temp, topP: top, topK: k, maxTokens: max,
+            strategyType: strategy, reserveRatio: ratio, summaryThreshold: threshold } = currentModelResponse.data;
+
           if (modelId) setSelectedModelId(modelId);
           if (temp !== undefined) setTemperature(temp);
           if (top !== undefined) setTopP(top);
@@ -114,16 +114,16 @@ export function ModelSelectDialog({
         setLoading(false);
       }
     }
-    
+
     if (open) {
       loadData();
     }
   }, [open, agentId]);
-  
+
   // 保存选择的模型
   const handleSave = async () => {
     if (!selectedModelId || !agentId) return;
-    
+
     setSaving(true);
     try {
       // 构建模型配置
@@ -137,7 +137,7 @@ export function ModelSelectDialog({
         reserveRatio,
         summaryThreshold
       };
-      
+
       // 调用API保存模型ID和配置
       const response = await setAgentModelWithToast(agentId, modelConfig);
       if (response.code === 200) {
@@ -169,22 +169,23 @@ export function ModelSelectDialog({
             <div>
               <DialogTitle className="text-xl">配置对话模型</DialogTitle>
               <DialogDescription className="mt-1">
-                {agentName 
+                {agentName
                   ? `为助理 "${agentName}" 选择合适的大语言模型`
                   : "选择合适的大语言模型"}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
-        
+
         <Tabs defaultValue="modelSelect" className="w-full mt-4">
           <TabsList>
             <TabsTrigger value="modelSelect">模型选择</TabsTrigger>
             <TabsTrigger value="modelParams">模型参数</TabsTrigger>
             <TabsTrigger value="tokenStrategy">Token策略</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="modelSelect" className="pt-4">
+            <DialogTitle className="sr-only">选择模型</DialogTitle>
             {loading ? (
               <div className="flex justify-center py-10">
                 <Loader2 className="h-6 w-6 animate-spin" />
@@ -194,9 +195,9 @@ export function ModelSelectDialog({
                 暂无可用模型，请先在设置中添加模型
               </div>
             ) : (
-              <ScrollArea className="flex-1 overflow-auto pr-4" style={{maxHeight: "60vh"}}>
-                <RadioGroup 
-                  value={selectedModelId || ""} 
+              <ScrollArea className="flex-1 overflow-auto pr-4" style={{ maxHeight: "60vh" }}>
+                <RadioGroup
+                  value={selectedModelId || ""}
                   onValueChange={setSelectedModelId}
                   className="space-y-6"
                 >
@@ -207,7 +208,7 @@ export function ModelSelectDialog({
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {providerModels.map(model => (
-                          <div 
+                          <div
                             key={model.id}
                             className={`
                               relative border rounded-lg p-4 transition-colors cursor-pointer
@@ -223,15 +224,15 @@ export function ModelSelectDialog({
                                 </Badge>
                               </div>
                             )}
-                            
-                            <RadioGroupItem 
-                              value={model.id} 
-                              id={model.id} 
+
+                            <RadioGroupItem
+                              value={model.id}
+                              id={model.id}
                               className="sr-only"
                               disabled={!model.status}
                             />
-                            
-                            <label 
+
+                            <label
                               htmlFor={model.id}
                               className="flex flex-col h-full cursor-pointer"
                             >
@@ -248,11 +249,11 @@ export function ModelSelectDialog({
                                   </svg>
                                 )}
                               </div>
-                              
+
                               <div className="text-sm text-muted-foreground mb-2 flex-1">
-                                {model.description || "无描述"} 
+                                {model.description || "无描述"}
                               </div>
-                              
+
                               <div className="flex items-center text-xs text-muted-foreground mt-auto">
                                 <div className="flex items-center">
                                   <span className="mr-3">模型ID: {model.modelId}</span>
@@ -268,8 +269,9 @@ export function ModelSelectDialog({
               </ScrollArea>
             )}
           </TabsContent>
-          
+
           <TabsContent value="modelParams" className="space-y-6 py-4">
+            <DialogTitle className="sr-only">模型参数设置</DialogTitle>
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -285,7 +287,7 @@ export function ModelSelectDialog({
                 />
                 <p className="text-sm text-muted-foreground">控制输出的随机性，值越高输出越随机</p>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">Top P</span>
@@ -317,12 +319,13 @@ export function ModelSelectDialog({
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="tokenStrategy" className="space-y-6 py-4">
+            <DialogTitle className="sr-only">Token策略设置</DialogTitle>
             <div>
               <h3 className="mb-4 font-medium">策略选择</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div 
+                <div
                   className={`border rounded-lg p-4 cursor-pointer ${strategyType === "NONE" ? "bg-blue-50 border-blue-500" : ""}`}
                   onClick={() => setStrategyType("NONE")}
                 >
@@ -334,8 +337,8 @@ export function ModelSelectDialog({
                   </div>
                   <p className="text-sm text-muted-foreground">不对历史对话进行处理，可能导致超限错误</p>
                 </div>
-                
-                <div 
+
+                <div
                   className={`border rounded-lg p-4 cursor-pointer ${strategyType === "SLIDING_WINDOW" ? "bg-blue-50 border-blue-500" : ""}`}
                   onClick={() => setStrategyType("SLIDING_WINDOW")}
                 >
@@ -347,8 +350,8 @@ export function ModelSelectDialog({
                   </div>
                   <p className="text-sm text-muted-foreground">对历史对话进行滑动窗口处理</p>
                 </div>
-                
-                <div 
+
+                <div
                   className={`border rounded-lg p-4 cursor-pointer ${strategyType === "SUMMARIZE" ? "bg-blue-50 border-blue-500" : ""}`}
                   onClick={() => setStrategyType("SUMMARIZE")}
                 >
@@ -377,7 +380,7 @@ export function ModelSelectDialog({
               />
               <p className="text-sm text-muted-foreground">模型可接受的最大上下文长度</p>
             </div>
-            
+
             {strategyType === "SUMMARIZE" && (
               <>
                 <div className="space-y-2 mt-4">
@@ -394,7 +397,7 @@ export function ModelSelectDialog({
                   />
                   <p className="text-sm text-muted-foreground">保留最近对话的比例</p>
                 </div>
-                
+
                 <div className="space-y-2 mt-4">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">摘要触发阈值</span>
@@ -418,8 +421,8 @@ export function ModelSelectDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             取消
           </Button>
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={!selectedModelId || saving || loading}
             className="gap-1"
           >

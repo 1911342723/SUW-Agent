@@ -114,10 +114,10 @@ export function NavigationBar() {
           </SheetContent>
         </Sheet>
         <Link href="/" className="mr-6 flex items-center">
-          <span className="font-bold text-base md:text-lg">SWU人工智能代理平台</span>
+          <span className="font-bold text-sm md:text-base lg:text-lg">SWU人工智能代理平台</span>
         </Link>
         <div className="flex flex-1 items-center justify-between">
-          <nav className="flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -130,7 +130,7 @@ export function NavigationBar() {
                 )}
               >
                 <item.icon className="h-5 w-5" />
-                {item.name}
+                <span className="hidden lg:inline">{item.name}</span>
               </Link>
             ))}
           </nav>

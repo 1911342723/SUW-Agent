@@ -11,7 +11,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <WorkspaceProvider>
           <div className="relative flex min-h-screen flex-col">
             <NavigationBar />
-            <div className="flex-1 flex">{children}</div>
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+              {children}
+            </div>
           </div>
         </WorkspaceProvider>
       </Providers>
