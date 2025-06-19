@@ -23,9 +23,10 @@ import { toast } from "@/hooks/use-toast"
 
 interface ConversationListProps {
   workspaceId: string
+  setIsCollapsed?: (collapsed: boolean) => void
 }
 
-export function ConversationList({ workspaceId }: ConversationListProps) {
+export function ConversationList({ workspaceId, setIsCollapsed }: ConversationListProps) {
   const { selectedConversationId, setSelectedConversationId } = useWorkspace()
   const [sessions, setSessions] = useState<SessionDTO[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +38,14 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null)
   const [isDeletingSession, setIsDeletingSession] = useState(false)
   const [searchText, setSearchText] = useState("")
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCollapsedState, setIsCollapsedState] = useState(false)
+  const isCollapsed = isCollapsedState;
+  const handleSetCollapsed = (collapsed: boolean) => {
+    setIsCollapsedState(collapsed);
+    if (typeof setIsCollapsed === 'function') {
+      setIsCollapsed(collapsed);
+    }
+  }
 
   // 获取会话列表
   const fetchSessions = async () => {
@@ -51,9 +59,12 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
         if (response.data.length > 0 && !selectedConversationId) {
           setSelectedConversationId(response.data[0].id)
         }
+        return response.data
       }
+      return []
     } catch (error) {
       console.error("获取会话列表错误:", error)
+      return []
     } finally {
       setLoading(false)
     }
@@ -115,10 +126,13 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
       const response = await deleteAgentSessionWithToast(sessionToDelete)
 
       if (response.code === 200) {
-        // 重新获取会话列表
-        fetchSessions()
-        // 如果删除的是当前选中的会话，则清除选中状态
-        if (selectedConversationId === sessionToDelete) {
+        // 重新获取会话列表，并等待结果
+        const sessionsAfter = await fetchSessions()
+        // 如果删除的是当前选中的会话，或当前选中会话已不存在，则清除选中状态
+        if (
+          selectedConversationId === sessionToDelete ||
+          (sessionsAfter && !sessionsAfter.some(s => s.id === selectedConversationId))
+        ) {
           setSelectedConversationId(null)
         }
 
@@ -217,7 +231,7 @@ export function ConversationList({ workspaceId }: ConversationListProps) {
         {/* 收缩/展开按钮 - 明确右侧位置 */}
         <div
           className={`absolute ${isCollapsed ? 'w-full h-12' : 'w-12 border-l h-full'} right-0 top-0 flex items-center justify-center cursor-pointer hover:bg-gray-50`}
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={() => handleSetCollapsed(!isCollapsed)}
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </div>

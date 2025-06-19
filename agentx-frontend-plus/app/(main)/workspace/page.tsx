@@ -35,6 +35,19 @@ import { AgentType } from "@/types/agent"
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
 
+// 简单实现 useMediaQuery
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    setMatches(media.matches);
+    const listener = () => setMatches(media.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, [query]);
+  return matches;
+}
+
 export default function WorkspacePage() {
   const { selectedWorkspaceId, selectedConversationId, setSelectedWorkspaceId, setSelectedConversationId } =
     useWorkspace()
@@ -176,6 +189,9 @@ export default function WorkspacePage() {
   // 获取当前会话的多模态设置
   const multiModal = currentSession?.multiModal || false
 
+  const [isConversationListCollapsed, setIsConversationListCollapsed] = useState(false)
+  const isMobile = useMediaQuery('(max-width: 640px)')
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] w-full">
       {/* 左侧边栏 */}
@@ -183,7 +199,7 @@ export default function WorkspacePage() {
 
       {/* 中间会话列表 */}
       {selectedWorkspaceId ? (
-        <ConversationList workspaceId={selectedWorkspaceId} />
+        <ConversationList workspaceId={selectedWorkspaceId} setIsCollapsed={setIsConversationListCollapsed} />
       ) : (
         <div className="flex-1 flex items-center justify-center bg-gray-50 border-r">
           <EmptyState title="选择一个工作区" description="从左侧选择一个工作区来查看对话" />
@@ -192,127 +208,37 @@ export default function WorkspacePage() {
 
       {/* 右侧聊天面板 */}
       <div className="flex-1 flex">
-        {!selectedConversationId ? (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
-            {loadingAgents ? (
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                <p className="text-muted-foreground">加载中...</p>
-              </div>
-            ) : selectedWorkspaceId ? (
-              // 如果已选择工作区但没有选择会话，显示创建会话提示
-              <EmptyState
-                title="选择或开始一个对话"
-                description="从中间列表选择一个对话，或者创建一个新的对话"
-                actionLabel="开启新会话"
-                onAction={() => {
-                  if (selectedWorkspaceId) {
-                    handleCreateSession(selectedWorkspaceId)
-                  }
-                }}
-              />
-            ) : (
-              // 只有在未选择工作区时才显示助理列表
-              <div className="w-full max-w-3xl p-6">
-                <h2 className="text-xl font-semibold mb-4">您的助理</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {agents.map((agent) => (
-                    <div
-                      key={agent.id}
-                      className="border rounded-lg p-4 flex items-start gap-3 cursor-pointer hover:bg-gray-50 group relative"
-                    >
-                      <div
-                        className="flex-1 flex items-start gap-3"
-                        onClick={() => {
-                          // Set the selected workspace to this agent
-                          setSelectedWorkspaceId(agent.id)
-                          // Create a new session for this agent
-                          handleCreateSession(agent.id)
-                        }}
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-900 overflow-hidden">
-                          {agent.avatar ? (
-                            <img
-                              src={agent.avatar || "/placeholder.svg"}
-                              alt={agent.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            agent.name.charAt(0).toUpperCase()
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium">{agent.name}</div>
-                          <div className="text-xs text-muted-foreground truncate">{agent.description || "无描述"}</div>
-                          {agent.modelId && (
-                            <div className="mt-1 flex items-center text-xs">
-                              <Terminal className="h-3 w-3 mr-1" />
-                              <span className="text-muted-foreground">
-                                模型: {agent.modelName || agent.modelId || "未设置"}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* 操作菜单 */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">菜单</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedAgent(agent);
-                              setModelDialogOpen(true);
-                            }}
-                          >
-                            <Settings className="mr-2 h-4 w-4" />
-                            设置模型
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setAgentToDelete(agent);
-                            }}
-                            className="text-red-500 focus:text-red-500"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            移除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  ))}
+        {isMobile && !isConversationListCollapsed ? null : (
+          !selectedConversationId ? (
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+              {loadingAgents ? (
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">加载中...</p>
                 </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex-1 flex w-full h-full">
-            <div className="flex-1 flex flex-col">
-              <ChatPanel
-                conversationId={selectedConversationId}
-                isFunctionalAgent={isFunctionalAgent}
-                agentName={currentAgent?.name || "AI助手"}
-                agentAvatar={currentAgent?.avatar}
-                onToggleScheduledTaskPanel={() => setShowScheduledTaskPanel(!showScheduledTaskPanel)}
-                multiModal={multiModal}
-              />
+              ) : (
+                <EmptyState
+                  title="选择或开始一个对话"
+                  description="从中间列表选择一个对话，或者创建一个新的对话"
+                  actionLabel="开启新会话"
+                  onAction={() => {
+                    if (selectedWorkspaceId) {
+                      handleCreateSession(selectedWorkspaceId)
+                    }
+                  }}
+                />
+              )}
             </div>
-            {showScheduledTaskPanel && isFunctionalAgent && (
-              <ScheduledTaskPanel
-                isOpen={showScheduledTaskPanel}
-                onClose={() => setShowScheduledTaskPanel(false)}
-                conversationId={selectedConversationId}
-                agentId={selectedWorkspaceId || undefined}
-              />
-            )}
-          </div>
+          ) : (
+            <ChatPanel
+              conversationId={selectedConversationId && typeof selectedConversationId === 'string' ? selectedConversationId : ''}
+              agentName={currentAgent?.name || "AI助手"}
+              agentAvatar={currentAgent?.avatar}
+              isFunctionalAgent={isFunctionalAgent}
+              multiModal={multiModal}
+              onToggleScheduledTaskPanel={() => setShowScheduledTaskPanel(true)}
+            />
+          )
         )}
       </div>
 

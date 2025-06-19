@@ -1,18 +1,2 @@
-version: '3.8'
-services:
-  n8n:
-    image: n8nio/n8n:1.2.1
-    container_name: n8n
-    restart: unless-stopped
-    ports:
-      - "5678:5678"
 
-    environment:
-      - N8N_URL_BASE=http://localhost:3000  # 前端Next.js地址
-      - N8N_CORS_ALLOWED_ORIGINS=http://localhost:3000  # 精确限制为前端地址
-      - N8N_WS_BASE_URL=ws://localhost:3000  # WebSocket代理地址
-      - N8N_DISABLE_UI_IFRAME_PROTECTION=true  # 允许iframe嵌入
-    volumes:
-      - ./n8n_data:/home/node/.n8n
-    network_mode: host  # 保持host模式确保网络畅通
 

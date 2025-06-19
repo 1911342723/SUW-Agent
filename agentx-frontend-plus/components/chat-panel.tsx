@@ -758,7 +758,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
       </div>
 
       {/* 输入框 */}
-      <div className="border-t p-2 bg-white">
+      <div className="border-t p-2 bg-white sm:static fixed bottom-0 left-0 w-full z-20 sm:w-auto sm:p-2 p-1">
         {/* 已上传文件显示区域 - 在输入框上方 */}
         {uploadedFiles.length > 0 && (
           <div className="mb-2 px-2">
@@ -834,7 +834,7 @@ export function ChatPanel({ conversationId, isFunctionalAgent = false, agentName
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            className="min-h-[56px] flex-1 resize-none overflow-hidden rounded-xl bg-white px-3 py-2 font-normal border-gray-200 shadow-sm focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-opacity-50"
+            className="min-h-[40px] sm:min-h-[56px] flex-1 resize-none overflow-hidden rounded-xl bg-white px-2 py-1 sm:px-3 sm:py-2 font-normal border-gray-200 shadow-sm focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-opacity-50 text-sm sm:text-base max-h-[40vh] sm:max-h-32"
             rows={Math.min(5, Math.max(2, input.split('\n').length))}
           />
           <Button
